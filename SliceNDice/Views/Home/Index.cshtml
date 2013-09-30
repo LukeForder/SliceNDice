@@ -1,0 +1,204 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="btn-group">
+    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+        <span class="glyphicon glyphicon-cog"></span> <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+        <li class="checkbox" style="margin: 5px;">
+            <label>
+                <input type="checkbox" data-bind="checked: hideWithCities"> Hide purchases with cities.
+            </label>
+        </li>
+    </ul>
+</div>
+<form class="form-horizontal" role="form">
+    <div class="form-group">
+        <label for="city" class="col-md-1 col-xs-2 col-lg-1 control-label">City:</label>
+        <div class="col-md-11 col-xs-10 col-lg-11">
+            <input data-bind="value: city, valueUpdate: 'afterkeydown'" type="text" class="form-control" id="city" placeholder="Where are you?">
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <button class="btn btn-success pull-right" data-bind="enable: canApply, click: doUpdate">Apply</button>
+        </div>
+    </div>
+</form>
+<hr />
+<h3>Purchases</h3>
+<hr />
+<div>
+    <div data-bind="foreach: filteredPurchases">
+        <div class="row" data-bind="css: { selected: checked() }, click: $parent.select" style="padding: 1em;">
+            <div class="col-md-6 col-xs-8 col-sm-6">
+                <img data-bind="attr: { src: image }" class="thumbnail" />
+            </div>
+
+            <ul class="col-md-6 col-xs-4 col-sm-4 unstyled purchase-properties">
+                <li class="pull-left" data-bind="if: city">
+                    <strong>City: </strong>
+                    <span data-bind="text: city" />
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+@section styles {
+    @Styles.Render("~/Content/toastr")
+    <style>
+        .selected {
+            background-color: #007fff;
+            color: #ffffff;
+        }
+
+        .unstyled {
+            list-style-type: none;
+        }
+
+        img.thumbnail {
+            overflow: hidden;
+        }
+
+        .purchase-properties {
+            font-size: 1.25em;
+        }
+
+        .col-xs-4 * {
+            font-size: 12pt;
+        }
+    </style>
+}
+
+@section scripts {
+    @Scripts.Render("~/bundles/knockout")
+    @Scripts.Render("~/bundles/linq")
+    @Scripts.Render("~/bundles/toastr")
+    <script>
+        var hue = function () {
+            return "222222";
+        };
+
+        function ViewModel() {
+            var self = this;
+
+            self.select = function (purchase) {
+                purchase.checked(!purchase.checked());
+            };
+
+            self.doUpdate = function () {
+                var selectedPurchases =
+                    Enumerable.From(self.purchases()).Where(function (purchase) {
+                        if (purchase.checked())
+                            return purchase;
+                    }).ToArray();
+
+                Enumerable.From(selectedPurchases).ForEach(function (purchase) {
+                    purchase.city(self.city());
+                });
+
+
+                self.city(null);
+
+                Enumerable.From(self.purchases()).ForEach(function (purchase) { purchase.checked(false); });
+
+                toastr.success("updated " + selectedPurchases.length + " purchase" + (selectedPurchases.length > 1 ? "s" : "") + ".", "Success");
+            };
+
+            self.hideWithCities = ko.observable(true);
+
+            self.city = ko.observable(null);
+
+            self.purchases = ko.observableArray([
+                {
+                    image: "http://placehold.it/300x200/" + hue(),
+                    checked: ko.observable(false),
+                    city: ko.observable('London')
+                },
+                {
+                    image: "http://placehold.it/300x200/" + hue(),
+                    checked: ko.observable(false),
+                    city: ko.observable()
+                },
+                {
+                    image: "http://placehold.it/300x200/" + hue(),
+                    checked: ko.observable(false),
+                    city: ko.observable()
+                },
+                {
+                    image: "http://placehold.it/300x200/" + hue(),
+                    checked: ko.observable(false),
+                    city: ko.observable()
+                },
+                {
+                    image: "http://placehold.it/300x200/" + hue(),
+                    checked: ko.observable(false),
+                    city: ko.observable()
+                },
+                {
+                    image: "http://placehold.it/300x200/" + hue(),
+                    checked: ko.observable(false),
+                    city: ko.observable()
+                },
+                {
+                    image: "http://placehold.it/300x200/" + hue(),
+                    checked: ko.observable(false),
+                    city: ko.observable()
+                },
+                {
+                    image: "http://placehold.it/300x200/" + hue(),
+                    checked: ko.observable(false),
+                    city: ko.observable()
+                },
+                {
+                    image: "http://placehold.it/300x200/" + hue(),
+                    checked: ko.observable(false),
+                    city: ko.observable()
+                },
+                {
+                    image: "http://placehold.it/300x200/" + hue(),
+                    checked: ko.observable(false),
+                    city: ko.observable()
+                },
+                {
+                    image: "http://placehold.it/300x200/" + hue(),
+                    checked: ko.observable(false),
+                    city: ko.observable()
+                },
+                {
+                    image: "http://placehold.it/300x200/" + hue(),
+                    checked: ko.observable(false),
+                    city: ko.observable()
+                }
+            ]);
+
+            self.canApply = ko.computed(function () {
+                return Enumerable.From(this.purchases()).Any(function (purchase) { return purchase.checked(); }) && this.city();
+            }, self);
+
+            self.filteredPurchases = ko.computed(function () {
+
+                var filteredPurchases = Enumerable.From(this.purchases());
+
+                if (this.hideWithCities()) {
+                    filteredPurchases = filteredPurchases.Where(function (purchase) {
+                        if (!(purchase.city())) {
+                            return purchase;
+                        }
+                    });
+                }
+
+                return filteredPurchases.ToArray();
+            }, self);
+
+        };
+
+
+
+        ko.applyBindings(new ViewModel());
+    </script>
+}
